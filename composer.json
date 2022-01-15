@@ -1,7 +1,7 @@
 {
     "require": {
         "react/http": "^1.5",
-        "viewi/viewi": "^0.1.6"
+        "viewi/viewi": "dev-master"
     },
     "autoload": {
         "psr-4": {
