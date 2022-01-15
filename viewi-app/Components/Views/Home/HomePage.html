@@ -1,0 +1,8 @@
+<Layout title="$title">
+    <h1>$title</h1>
+    <div><strong>Data from the Server:</strong> {json_encode($post)}</div>
+    <div if="$post">
+        <h2>$post->Name</h2>
+        <i>Version: $post->Version</i>
+    </div>
+</Layout>
