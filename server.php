@@ -14,7 +14,6 @@ use Viewi\Routing\Route;
 
 require __DIR__ . '/vendor/autoload.php';
 
-
 $viewiRequestHandler = new RequestsHandlerMiddleware();
 Route::setAdapter(new ViewiReactAdapter($viewiRequestHandler));
 
