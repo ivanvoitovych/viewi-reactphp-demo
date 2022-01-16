@@ -1,5 +1,6 @@
 <?php
 
+use Components\Views\AsyncTest\AsyncTestComponent;
 use Components\Views\Home\HomePage;
 use Components\Views\NotFound\NotFoundPage;
 use Components\Views\Pages\CounterPage;
@@ -14,4 +15,5 @@ ViewiRoute::get('/counter/{page}', CounterPage::class);
 ViewiRoute::get('/todo', TodoAppPage::class);
 ViewiRoute::get('/redirect-test', RedirectTestComponent::class);
 ViewiRoute::get('/current-url', CurrentUrlTestPage::class); 
+ViewiRoute::get('/async-ssr-test/{id}', AsyncTestComponent::class);
 ViewiRoute::get('*', NotFoundPage::class);
