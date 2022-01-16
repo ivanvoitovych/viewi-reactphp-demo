@@ -55,7 +55,6 @@ $http->listen($socket);
 ### Thanks and feel free to review, ask questions, contribute in any way.
 
 ## Links:
-___
 
 [Viewi Twitter](https://twitter.com/viewiphp)
 
