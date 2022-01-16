@@ -13,7 +13,7 @@ class HomePage extends BaseComponent
 
     public function __init(HttpClient $http)
     {
-        $http->get('/api/data')->then(
+        $http->get('/api/posts/45')->then(
             function (PostModel $post) {
                 $this->post = $post;
             },
