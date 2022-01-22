@@ -6,5 +6,5 @@ use Viewi\BaseComponent;
 
 class AsyncTestComponent extends BaseComponent
 {
-    public string $title = 'Server side rendering with Deferred (async) response';
+    public string $title = 'Server side rendering (SSR) with Deferred (async) response';
 }
