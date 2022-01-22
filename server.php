@@ -27,11 +27,12 @@ Viewi\Routing\Router::register('get', '/api/posts/{id}', function (ServerRequest
 
 Viewi\Routing\Router::register('get', '/api/posts/{id}/async', function (ServerRequestInterface $request) {
     return new Promise(function ($resolve, $reject) use ($request) {
-        Loop::addTimer(1, function () use ($resolve, $request) {
+        Loop::addTimer((float)1 + (rand(1, 20) / 100), function () use ($resolve, $request) {
+            $postId = $request->getAttribute('params')['id'] ?? 0;
             $post = new PostModel();
-            $post->Id = $request->getAttribute('params')['id'] ?? 0;
-            $post->Name = 'Viewi ft. ReactPHP';
-            $post->Version = 1;
+            $post->Id = $postId;
+            $post->Name = "Viewi ft. ReactPHP $postId";
+            $post->Version = $postId + 1000;
             $response = new RawJsonResponse($post);
             // echo "request Loop:1. \n";
             $resolve($response);
