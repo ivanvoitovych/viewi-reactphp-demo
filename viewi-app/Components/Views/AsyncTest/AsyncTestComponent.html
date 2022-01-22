@@ -1,15 +1,9 @@
 <Layout title="$title">
     <h1>$title</h1>
-    <h2>Server response takes 1 sec to return the data.</h2>
-    <h2>Work in Progress! Right now it's client side only, SSR without data!</h2>
-    <div><strong>Data from the Server:</strong> {json_encode($post)}</div>
-    <div if="$post">
-        <h2>$post->Name</h2>
-        <div>
-            <strong>Id: $post->Id</strong>
-        </div>
-        <div>
-            <i>Version: $post->Version</i>
-        </div>
-    </div>
+    <h2>Server response takes 1 (+ rand 1-200 ms) sec to return the page.</h2>
+    <h2>This page loads 4 posts in non-blocking asynchronous mode.</h2>
+    <PostComponent id="1"></PostComponent>
+    <PostComponent id="2"></PostComponent>
+    <PostComponent id="3"></PostComponent>
+    <PostComponent id="4"></PostComponent>
 </Layout>
