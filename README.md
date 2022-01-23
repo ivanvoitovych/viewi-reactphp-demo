@@ -44,13 +44,14 @@ $http->listen($socket);
 
 ## TODO:
 
-- Deferred (async) data during SSR.
-- Headers pass through (cookies, authorization. etc.) during internal requests.
-- Post/Explanation.
-- Package library.
-- Documentation.
-- Router helper ($router->get(...), etc).
-- Router params injection into the action: 'get', '/api/posts/{id}', function (ServerRequestInterface $request, int $id)
+- [x] Deferred (async) data during SSR.
+- [x] Deferred (async) Http Interceptors during SSR.
+- [ ] Headers pass through (cookies, authorization. etc.) during internal requests.
+- [ ] Post/Explanation.
+- [ ] Package library.
+- [ ] Documentation.
+- [ ] Router helper ($router->get(...), etc).
+- [ ] Router params injection into the action: 'get', '/api/posts/{id}', function (ServerRequestInterface $request, int $id)
 
 ### Thanks and feel free to review, ask questions, contribute in any way.
 
