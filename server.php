@@ -40,6 +40,15 @@ Viewi\Routing\Router::register('get', '/api/posts/{id}/async', function (ServerR
     });
 });
 
+Viewi\Routing\Router::register('post', '/api/authorization/session', function (ServerRequestInterface $request) {
+    return new Promise(function ($resolve, $reject) use ($request) {
+        Loop::addTimer(0.5, function () use ($resolve, $request) {
+            $response = new RawJsonResponse(['session' => '000-1111-2222']);
+            $resolve($response);
+        });
+    });
+});
+
 // include viewi routes
 include __DIR__ . '/viewi-app/viewi.php';
 
