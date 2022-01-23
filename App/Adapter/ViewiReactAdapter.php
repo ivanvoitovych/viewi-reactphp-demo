@@ -3,10 +3,12 @@
 namespace App\Adapter;
 
 use App\Message\RawJsonResponse;
+use React\Http\Message\Response;
 use React\Http\Message\ServerRequest;
 use React\Promise\Promise;
 use Viewi\Common\PromiseResolver;
 use Viewi\Routing\RouteAdapterBase;
+use Viewi\WebComponents\Response as WebComponentsResponse;
 
 class ViewiReactAdapter extends RouteAdapterBase
 {
@@ -28,9 +30,15 @@ class ViewiReactAdapter extends RouteAdapterBase
 
     private function handleInternal($response)
     {
-        /** @var Psr7Response $response */
         if ($response instanceof RawJsonResponse) {
             return $response->getData();
+        }
+        /** @var Response $response */
+        if ($response->getStatusCode() != 200) {
+            return (new WebComponentsResponse())
+                ->WithContent(json_decode($response->getBody()))
+                ->WithCode($response->getStatusCode())
+                ->WithHeaders($response->getHeaders());
         }
         return json_decode($response->getBody());
     }
@@ -42,9 +50,6 @@ class ViewiReactAdapter extends RouteAdapterBase
 
         if ($response instanceof Promise) {
             // handle Promise
-            // ??? await or Fiber ??? php 8.1 only
-            // Async SSR - work in progress
-            // Async Viewi render status: IN PROGRESS, once done - no await required here
             return new PromiseResolver(function (callable $resolve, callable $reject) use ($response) {
                 $response->then(function ($innerResponse) use ($resolve) {
                     $data = $this->handleInternal($innerResponse);
