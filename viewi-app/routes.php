@@ -2,6 +2,7 @@
 
 use Components\Views\AsyncTest\AsyncTestComponent;
 use Components\Views\Home\HomePage;
+use Components\Views\InterceptorsTest\InterceptorsTestComponent;
 use Components\Views\NotFound\NotFoundPage;
 use Components\Views\Pages\CounterPage;
 use Components\Views\Pages\CurrentUrlTestPage;
@@ -16,4 +17,5 @@ ViewiRoute::get('/todo', TodoAppPage::class);
 ViewiRoute::get('/redirect-test', RedirectTestComponent::class);
 ViewiRoute::get('/current-url', CurrentUrlTestPage::class); 
 ViewiRoute::get('/async-ssr-test/{id}', AsyncTestComponent::class);
+ViewiRoute::get('/interceptors-test/{id}', InterceptorsTestComponent::class);
 ViewiRoute::get('*', NotFoundPage::class);
