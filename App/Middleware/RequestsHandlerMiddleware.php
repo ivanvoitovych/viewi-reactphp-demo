@@ -21,7 +21,7 @@ class RequestsHandlerMiddleware
         $match = Router::resolve($request->getUri()->getPath(), $request->getMethod());
         if (!$match) {
             return new Response(
-                200,
+                404,
                 array(
                     'Content-Type' => 'text/plain'
                 ),
