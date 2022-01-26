@@ -3,6 +3,8 @@
 use Components\Views\AsyncTest\AsyncTestComponent;
 use Components\Views\Home\HomePage;
 use Components\Views\InterceptorsTest\InterceptorsTestComponent;
+use Components\Views\MiddlewareTest\MiddlewareFailTestComponent;
+use Components\Views\MiddlewareTest\MiddlewareTestComponent;
 use Components\Views\NotFound\NotFoundPage;
 use Components\Views\Pages\CounterPage;
 use Components\Views\Pages\CurrentUrlTestPage;
@@ -18,4 +20,6 @@ ViewiRoute::get('/redirect-test', RedirectTestComponent::class);
 ViewiRoute::get('/current-url', CurrentUrlTestPage::class); 
 ViewiRoute::get('/async-ssr-test/{id}', AsyncTestComponent::class);
 ViewiRoute::get('/interceptors-test/{id}', InterceptorsTestComponent::class);
+ViewiRoute::get('/middleware-test/{id}', MiddlewareTestComponent::class);
+ViewiRoute::get('/middleware-fail-test/{id}', MiddlewareFailTestComponent::class);
 ViewiRoute::get('*', NotFoundPage::class);
