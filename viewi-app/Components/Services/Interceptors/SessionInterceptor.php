@@ -36,7 +36,7 @@ class SessionInterceptor
             });
         }, function ($error) use ($handler) {
             // print_r(['SessionInterceptor error']);
-            $handler->reject($error);
+            $handler->reject('Session has expired.');
         });
     }
 }
