@@ -2,16 +2,19 @@
 
 namespace Components\Services\Middleware;
 
+use Viewi\Common\ClientRouter;
 use Viewi\Common\HttpClient;
 use Viewi\Components\Interfaces\IMiddleware;
 
 class AuthGuard implements IMiddleware
 {
     private HttpClient $http;
+    private ClientRouter $router;
 
-    public function __construct(HttpClient $http)
+    public function __construct(HttpClient $http, ClientRouter $router)
     {
         $this->http = $http;
+        $this->router = $router;
     }
 
     public function run(callable $next)
