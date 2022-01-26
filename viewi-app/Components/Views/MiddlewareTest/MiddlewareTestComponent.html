@@ -1,0 +1,18 @@
+<Layout title="$title">
+    <h2>$title</h2>
+    <p>
+        On this page we use Middleware list (Guards). And only if everything is fine the component will be rendered.
+    </p>
+    <div if="$post">
+        <h2>$post->Name</h2>
+        <div>
+            <strong>Id: $post->Id</strong>
+        </div>
+        <div>
+            <i>Version: $post->Version</i>
+        </div>
+    </div>
+    <div if="$message">
+        $message
+    </div>
+</Layout>
