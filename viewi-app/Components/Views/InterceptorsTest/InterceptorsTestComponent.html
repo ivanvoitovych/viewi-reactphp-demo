@@ -3,6 +3,9 @@
     <p>
         On this page we call session API first using SessionInterceptor. And only if everything is fine we proceed with getting the Post.
     </p>
+    <p>
+        Expected response time 600 - 800 ms (randomly with Loop::addTimer)
+    </p>
     <div if="$post">
         <h2>$post->Name</h2>
         <div>
