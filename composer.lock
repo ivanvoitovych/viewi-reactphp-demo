@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9e9498a76eccbddd2096fd5031e9eba7",
+    "content-hash": "a40d76708b63b4a8b8a3abe2c4329a0e",
     "packages": [
         {
             "name": "evenement/evenement",
@@ -882,16 +882,16 @@
         },
         {
             "name": "viewi/viewi",
-            "version": "v0.1.6",
+            "version": "v0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/viewi/viewi.git",
-                "reference": "1a0059f2dca1fbc25ba33780f1fe9d88b1fab284"
+                "reference": "d13748dd0be92c614a53b47e2e23356b44349ef7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/viewi/viewi/zipball/1a0059f2dca1fbc25ba33780f1fe9d88b1fab284",
-                "reference": "1a0059f2dca1fbc25ba33780f1fe9d88b1fab284",
+                "url": "https://api.github.com/repos/viewi/viewi/zipball/d13748dd0be92c614a53b47e2e23356b44349ef7",
+                "reference": "d13748dd0be92c614a53b47e2e23356b44349ef7",
                 "shasum": ""
             },
             "require": {
@@ -919,9 +919,9 @@
             ],
             "support": {
                 "issues": "https://github.com/viewi/viewi/issues",
-                "source": "https://github.com/viewi/viewi/tree/v0.1.6"
+                "source": "https://github.com/viewi/viewi/tree/v0.3.1"
             },
-            "time": "2022-01-14T17:12:37+00:00"
+            "time": "2022-01-28T10:27:15+00:00"
         }
     ],
     "packages-dev": [],
