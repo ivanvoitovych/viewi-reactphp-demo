@@ -44,7 +44,7 @@ In this case it is `public` folder:
 
  `PageEngine::PUBLIC_ROOT_DIR => __DIR__ . '/../public/'` 
 
-The final config should look something lik this:
+The final config should look something like this:
 
 `viewi-app\config.php`
 
@@ -268,7 +268,7 @@ App::getEngine()->render(
 
 The full code is located here `App\Middleware\RequestsHandlerMiddleware.php`
 
-Use it as regular middleware:
+Use it as a regular middleware:
 
 ```php
 $viewiRequestHandler = new RequestsHandlerMiddleware();
@@ -285,7 +285,7 @@ To make things work during SSR you need to tell Viewi how to invoke the request 
 It has the following abstract methods:
 
 - `register($method, $url, $component, $defaults);` - used when you have a custom routing system. In case you use Viewi router it's not needed.
-- `handle($method, $url, $params = null);` - used when `HttpClient` call an API during SSR.
+- `handle($method, $url, $params = null);` - used when `HttpClient` calls an API during SSR.
 
 In this example we don't need `register`, so keep it empty:
 
@@ -296,7 +296,7 @@ public function register($method, $url, $component, $defaults)
 }
 ```
 
-For `handle` method we will need `RequestsHandlerMiddleware` to process internal requests. Let's inject it in te constructor:
+For `handle` method we will need `RequestsHandlerMiddleware` to process internal requests. Let's inject it in the constructor:
 
 ```php
 /**
@@ -311,7 +311,7 @@ public function __construct($requestHandler)
 }
 ```
 
-Next, we need to create an instance of `React\Http\Message\ServerRequest` and pass to the `RequestsHandlerMiddleware`:
+Next, we need to create an instance of `React\Http\Message\ServerRequest` and pass it to the `RequestsHandlerMiddleware`:
 
 ```php
 public function handle($method, $url, $params = null)
@@ -358,7 +358,7 @@ private function handleInternal($response)
 ```
 
 In ReactPHP, response by default implements `Psr\Http\Message\ResponseInterface`, therefore the content is always a string (html or json).
-But if you want to use typed function arguments inside for callbacks from HttpClient requests (see example), it's recommended to use `RawJsonResponse` declared in `App\Message\RawJsonResponse.php`
+But if you want to use typed function arguments inside of callbacks from HttpClient requests (see example), it's recommended to use `RawJsonResponse` declared in `App\Message\RawJsonResponse.php`
 
 ```php
 $http->get('/api/posts/45')->then(
