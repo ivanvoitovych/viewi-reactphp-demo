@@ -16,7 +16,7 @@ class StaticFilesMiddleware
     public function __invoke(\Psr\Http\Message\ServerRequestInterface $request, callable $next)
     {
         $filePath = $request->getUri()->getPath();
-        $file = $this->directory . '/public' . $filePath;
+        $file = $this->directory . $filePath;
         if (file_exists($file) && !is_dir($file)) {
             $fileExt = pathinfo($file, PATHINFO_EXTENSION);
             $contentType = 'text/text';
