@@ -18,6 +18,7 @@ class PostsActionAsync
             {
                 $ms = 5000;
             }
+            // Simulating I/O delay (DB/file read) with timer
             Loop::addTimer($ms / 1000 + (rand(1, 20) / 100), function () use ($resolve, $request) {
                 $postId = $request->getAttribute('params')['id'] ?? 0;
                 $post = new PostModel();
