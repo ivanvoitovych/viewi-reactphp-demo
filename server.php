@@ -25,7 +25,7 @@ Viewi\Routing\Router::register('post', '/api/authorization/token/{valid}', new A
 include __DIR__ . '/viewi-app/viewi.php';
 
 $http = new React\Http\HttpServer(
-    new StaticFilesMiddleware(__DIR__),
+    new StaticFilesMiddleware(__DIR__ . '/public'),
     $viewiRequestHandler
 );
 
