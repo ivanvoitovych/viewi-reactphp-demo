@@ -12,11 +12,9 @@ This application demonstrates Viewi integration with ReactPHP.
 
 ## Architecture design
 
-ReactPHP will server our API. 
+ReactPHP will serve our API. 
 
-And Viewi will be responsible for rendering html pages on client side as a front-end application.
-But also it will be responsible for rendering html on server side (SSR).
-In both cases, Viewi application can consume server's API using HttpClient:
+And Viewi will be responsible for rendering HTML pages on the client-side as a front-end application. But also it will be responsible for rendering HTML on the server-side (SSR). In both cases, a Viewi application can consume the server's API using HttpClient:
 
 - In the browser - AJAX
 - During SSR - simulate a request and pass it to the ReactPHP application (direct invocation)
@@ -31,16 +29,16 @@ Click here: [Demo Overview](DemoOverview.md)
 
  - Install ReactPHP Http `composer require react/http`
  - Create `server.php` file for server code
- - Create `public` folder for serving static and public files
+ - Create a `public` folder for serving static and public files
  - Install Viewi `composer require viewi/viewi`
  - Create a demo application if you don't have any `vendor/bin/viewi new -e`
 
 ## Configuration
 
-To run Viewi application you need to tell Viewi where to put its compiled files.
-It should be public folder.
+To run a Viewi application you need to tell Viewi where to put its compiled files.
+It should be a public folder.
 
-In this case it is `public` folder:
+In this case, it is a `public` folder:
 
  `PageEngine::PUBLIC_ROOT_DIR => __DIR__ . '/../public/'` 
 
@@ -67,10 +65,10 @@ return [
 
 Remove your `index.php` which contains Viewi standalone application code, you won't need it.
 
-### Serve static files from public folder
+### Serve static files from a public folder
 
-If you don't have a middleware for static files or you application is not behind any of the web servers (Apache, Nginx, etc.)
-you will need `StaticFilesMiddleware` (Not production ready, only for demo purposes).
+If you don't have a middleware for static files or your application is not behind any of the web servers (Apache, Nginx, etc.)
+you will need `StaticFilesMiddleware` (Not production-ready, only for demo purposes).
 
 `App\Middleware\StaticFilesMiddleware.php`
 
@@ -132,12 +130,12 @@ new React\Http\HttpServer(
 
 ### Request handler
 
-Most import part of the application is to handle requests. In this case we need to handle two parts:
+The most important of the application is to handle requests. In this case, we need to handle two parts:
 
 - Requests that should be handled by Viewi
-- The rest of requests, that should be handled by API actions
+- The rest of the requests should be handled by API actions
 
-Viewi has built-in router and it's used in this example.
+Viewi has a built-in router and it's used in this example.
 But it's not required, you can use any router that you like and use it with Viewi as well.
 
 To get the route simply use `Viewi\Routing\Router::resolve` method:
@@ -281,10 +279,10 @@ $http = new React\Http\HttpServer(
 
 ## ReactPHP adapter for Viewi
 
-To make things work during SSR you need to tell Viewi how to invoke the request on server side by extending `Viewi\Routing\RouteAdapterBase`.
+To make things work during SSR you need to tell Viewi how to invoke the request on the server-side by extending `Viewi\Routing\RouteAdapterBase`.
 It has the following abstract methods:
 
-- `register($method, $url, $component, $defaults);` - used when you have a custom routing system. In case you use Viewi router it's not needed.
+- `register($method, $url, $component, $defaults);` - used when you have a custom routing system. In case you use a Viewi router it's not needed.
 - `handle($method, $url, $params = null);` - used when `HttpClient` calls an API during SSR.
 
 In this example we don't need `register`, so keep it empty:
@@ -296,7 +294,7 @@ public function register($method, $url, $component, $defaults)
 }
 ```
 
-For `handle` method we will need `RequestsHandlerMiddleware` to process internal requests. Let's inject it in the constructor:
+For the `handle` method we will need `RequestsHandlerMiddleware` to process internal requests. Let's inject it in the constructor:
 
 ```php
 /**
