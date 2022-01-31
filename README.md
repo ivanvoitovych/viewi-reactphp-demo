@@ -14,7 +14,7 @@ This application demonstrates Viewi integration with ReactPHP.
 
 ReactPHP will serve our API. 
 
-And Viewi will be responsible for rendering HTML pages on the client-side as a front-end application. But also it will be responsible for rendering HTML on the server-side (SSR). In both cases, a Viewi application can consume the server's API using HttpClient:
+And Viewi will be responsible for rendering HTML pages on the client-side as a front-end application. But also it will be responsible for rendering HTML on the server-side (SSR). In both cases, Viewi application can consume the server's API using HttpClient:
 
 - In the browser - AJAX
 - During SSR - simulate a request and pass it to the ReactPHP application (direct invocation)
@@ -35,7 +35,7 @@ Click here: [Demo Overview](DemoOverview.md)
 
 ## Configuration
 
-To run a Viewi application you need to tell Viewi where to put its compiled files.
+To run Viewi application you need to tell Viewi where to put its compiled files.
 It should be a public folder.
 
 In this case, it is a `public` folder:
@@ -282,7 +282,7 @@ $http = new React\Http\HttpServer(
 To make things work during SSR you need to tell Viewi how to invoke the request on the server-side by extending `Viewi\Routing\RouteAdapterBase`.
 It has the following abstract methods:
 
-- `register($method, $url, $component, $defaults);` - used when you have a custom routing system. In case you use a Viewi router it's not needed.
+- `register($method, $url, $component, $defaults);` - used when you have a custom routing system. In case you use Viewi router it's not needed.
 - `handle($method, $url, $params = null);` - used when `HttpClient` calls an API during SSR.
 
 In this example we don't need `register`, so keep it empty:
