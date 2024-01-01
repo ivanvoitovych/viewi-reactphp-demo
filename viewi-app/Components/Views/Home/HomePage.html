@@ -2,12 +2,12 @@
     <h1>$title</h1>
     <div><strong>Data from the Server:</strong> {json_encode($post)}</div>
     <div if="$post">
-        <h2>$post->Name</h2>
+        <h2>{$post->Name}</h2>
         <div>
-            <strong>Id: $post->Id</strong>
+            <strong>Id: {$post->Id}</strong>
         </div>
         <div>
-            <i>Version: $post->Version</i>
+            <i>Version: {$post->Version}</i>
         </div>
     </div>
 </Layout>

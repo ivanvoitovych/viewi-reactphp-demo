@@ -2,7 +2,7 @@
 
 namespace Components\Views\TodoApp;
 
-use Viewi\BaseComponent;
+use Viewi\Components\BaseComponent;
 
 class TodoList extends BaseComponent
 {

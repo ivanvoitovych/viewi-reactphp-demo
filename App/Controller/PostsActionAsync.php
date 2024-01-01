@@ -13,7 +13,7 @@ class PostsActionAsync
     public function __invoke(ServerRequestInterface $request)
     {
         return new Promise(function ($resolve, $reject) use ($request) {
-            $ms = $request->getAttribute('params')['ms'] ?? 1000;
+            $ms = $request->getAttribute('params')['ms'] ?? 50;
             if ($ms > 5000) // we don't want it to be more than 5 sec
             {
                 $ms = 5000;

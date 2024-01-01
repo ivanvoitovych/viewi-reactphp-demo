@@ -3,21 +3,19 @@
 namespace Components\Views\AsyncTest;
 
 use Components\Models\PostModel;
-use Viewi\BaseComponent;
-use Viewi\Common\HttpClient;
+use Viewi\Components\BaseComponent;
+use Viewi\Components\Http\HttpClient;
 
 class PostComponent extends BaseComponent
 {
     public ?int $id = 0;
     public ?PostModel $post = null;
-    private  HttpClient $http;
 
-    public function __init(HttpClient $http)
+    public function __construct(private HttpClient $http)
     {
-        $this->http = $http;
     }
 
-    public function __mounted()
+    public function mounted()
     {
         $this->http->get("/api/posts/{$this->id}/async")->then(
             function (PostModel $post) {

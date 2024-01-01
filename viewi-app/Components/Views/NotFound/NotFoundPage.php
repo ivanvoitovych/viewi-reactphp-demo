@@ -2,7 +2,7 @@
 
 namespace Components\Views\NotFound;
 
-use Viewi\BaseComponent;
+use Viewi\Components\BaseComponent;
 
 class NotFoundPage extends BaseComponent
 {

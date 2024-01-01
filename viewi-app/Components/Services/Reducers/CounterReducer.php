@@ -2,6 +2,9 @@
 
 namespace Components\Services\Reducers;
 
+use Viewi\DI\Singleton;
+
+#[Singleton]
 class CounterReducer
 {
     public int $count = 0;

@@ -2,7 +2,7 @@
 
 namespace Components\Views\Pages;
 
-use Viewi\BaseComponent;
+use Viewi\Components\BaseComponent;
 
 class TodoAppPage extends BaseComponent
 {

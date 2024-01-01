@@ -2,41 +2,44 @@
 
 namespace Components\Services\Interceptors;
 
-use Viewi\Common\HttpClient;
-use Viewi\Common\HttpHandler;
+use Viewi\Components\Http\HttpClient;
+use Viewi\Components\Http\Interceptor\IHttpInterceptor;
+use Viewi\Components\Http\Interceptor\IRequestHandler;
+use Viewi\Components\Http\Interceptor\IResponseHandler;
+use Viewi\Components\Http\Message\Request;
+use Viewi\Components\Http\Message\Response;
+use Viewi\DI\Singleton;
 
-class AuthorizationInterceptor
+#[Singleton]
+class AuthorizationInterceptor implements IHttpInterceptor
 {
-    private HttpClient $http;
-
-    public function __construct(HttpClient $http)
+    public function __construct(private HttpClient $http)
     {
-        $this->http = $http;
     }
 
-    public function intercept(HttpHandler $handler)
+    public function request(Request $request, IRequestHandler $handler)
     {
-        // set request options before $handler->httpClient->setOptions(...)
+        // set request headers $request->withHeader
         // call handle to continue with the request
-        // echo "AuthorizationInterceptor call post\n";
-        $this->http->post('/api/authorization/token/true')->then(function ($response) use ($handler) {            
-            // print_r(['AuthorizationInterceptor response', $response]);
-            $handler->httpClient->setOptions([
-                'headers' => [
-                    'Authorization' => $response['token']
-                ]
-            ]);
-            // echo "AuthorizationInterceptor call handle\n";
-            $handler->handle(function ($next) use ($handler) {
-                // access or modify $handler->response after
-                // call next if you are good with the response
-                // otherwise it won't continue
-                // echo "AuthorizationInterceptor call next\n";
-                $next();
-            });
-        }, function ($error) use ($handler) {
-            // print_r(['AuthorizationInterceptor error']);
-            $handler->reject('Unauthorized');
+        $this->http->post('/api/authorization/token/true')->then(function ($response) use ($request, $handler) {
+            $newRequest = $request->withHeader('Authorization', $response['token']);
+            $handler->next($newRequest);
+        }, function ($error) use ($request, $handler) {
+            $handler->reject($request);
         });
+    }
+
+    public function response(Response $response, IResponseHandler $handler)
+    {
+        // access or modify $response
+        // call $handler->next if you are good with the response
+        // call $handler->reject to reject the response
+        if ($response->status === 0) {
+            // rejected
+            // make it Unauthorized
+            $response->status = 401;
+            $response->body = 'Unauthorized';
+        }
+        $handler->next($response);
     }
 }

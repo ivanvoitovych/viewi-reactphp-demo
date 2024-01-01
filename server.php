@@ -2,27 +2,37 @@
 
 // php server.php
 
-use App\Adapter\ViewiReactAdapter;
+use App\Bridge\ViewiReactBridge;
 use App\Controller\AuthSessionAction;
 use App\Controller\AuthTokenAction;
 use App\Controller\PostsAction;
 use App\Controller\PostsActionAsync;
 use App\Middleware\RequestsHandlerMiddleware;
 use App\Middleware\StaticFilesMiddleware;
-use Viewi\Routing\Route;
+use Viewi\Bridge\IViewiBridge;
 
 require __DIR__ . '/vendor/autoload.php';
 
-$viewiRequestHandler = new RequestsHandlerMiddleware();
-Route::setAdapter(new ViewiReactAdapter($viewiRequestHandler));
+/**
+ * @var \Viewi\App
+ */
+$viewiApp = include __DIR__ . '/viewi-app/viewi.php';
+$router = $viewiApp->router();
+$viewiRequestHandler = new RequestsHandlerMiddleware($router, $viewiApp);
 
-Viewi\Routing\Router::register('get', '/api/posts/{id}', new PostsAction());
-Viewi\Routing\Router::register('get', '/api/posts/{id}/async/{ms?}', new PostsActionAsync());
-Viewi\Routing\Router::register('post', '/api/authorization/session', new AuthSessionAction());
-Viewi\Routing\Router::register('post', '/api/authorization/token/{valid}', new AuthTokenAction());
+$viewiReactBridge = new ViewiReactBridge($viewiRequestHandler);
+$app->factory()->add(IViewiBridge::class, function () use ($viewiReactBridge) {
+    return $viewiReactBridge;
+});
+
+
+$router->register('get', '/api/posts/{id}', new PostsAction());
+$router->register('get', '/api/posts/{id}/async/{ms?}', new PostsActionAsync());
+$router->register('post', '/api/authorization/session', new AuthSessionAction());
+$router->register('post', '/api/authorization/token/{valid}', new AuthTokenAction());
 
 // include viewi routes
-include __DIR__ . '/viewi-app/viewi.php';
+include __DIR__ . '/viewi-app/routes.php';
 
 $http = new React\Http\HttpServer(
     new StaticFilesMiddleware(__DIR__ . '/public'),

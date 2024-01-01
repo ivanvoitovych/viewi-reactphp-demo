@@ -2,7 +2,7 @@
 
 namespace Components\Views\Counter;
 
-use Viewi\BaseComponent;
+use Viewi\Components\BaseComponent;
 
 class Counter extends BaseComponent
 {

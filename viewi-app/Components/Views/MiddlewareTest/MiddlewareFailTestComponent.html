@@ -1,15 +1,16 @@
 <Layout title="$title">
     <h2>$title</h2>
     <p>
-        On this page we use Middleware list (Guards) and guard should not allow as to open this page. Expected redirect to home page.
+        On this page we use Middleware list (Guards) and guard should not allow as to open this page. Expected redirect
+        to home page.
     </p>
     <div if="$post">
-        <h2>$post->Name</h2>
+        <h2>{$post->Name}</h2>
         <div>
-            <strong>Id: $post->Id</strong>
+            <strong>Id: {$post->Id}</strong>
         </div>
         <div>
-            <i>Version: $post->Version</i>
+            <i>Version: {$post->Version}</i>
         </div>
     </div>
     <div if="$message">

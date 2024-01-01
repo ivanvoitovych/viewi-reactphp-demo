@@ -5,8 +5,8 @@ namespace Components\Views\InterceptorsTest;
 use Components\Models\PostModel;
 use Components\Services\Interceptors\AuthorizationInterceptor;
 use Components\Services\Interceptors\SessionInterceptor;
-use Viewi\BaseComponent;
-use Viewi\Common\HttpClient;
+use Viewi\Components\BaseComponent;
+use Viewi\Components\Http\HttpClient;
 
 class InterceptorsTestComponent extends BaseComponent
 {
@@ -14,19 +14,21 @@ class InterceptorsTestComponent extends BaseComponent
     public ?PostModel $post = null;
     public string $message = '';
 
-    public function __init(int $id, HttpClient $http, SessionInterceptor $session, AuthorizationInterceptor $auth)
+    public function __construct(private int $id, private HttpClient $http)
     {
-        $http
-            ->with([$session, 'intercept'])
-            ->with([$auth, 'intercept'])
-            ->get("/api/posts/$id/async/200")->then(
+    }
+
+    public function init()
+    {
+        $this->http
+            ->withInterceptor(SessionInterceptor::class)
+            ->withInterceptor(AuthorizationInterceptor::class)
+            ->get("/api/posts/{$this->id}/async/200")->then(
                 function (PostModel $post) {
                     $this->post = $post;
-                    // print_r("http->get->then->RESOLVED\n");
                 },
                 function ($error) {
                     $this->message = $error;
-                    // print_r("http->get->then->ERROR\n");
                 }
             );
     }

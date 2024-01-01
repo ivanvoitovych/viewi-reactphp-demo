@@ -1,12 +1,25 @@
 <?php
 
-use Viewi\PageEngine;
+use Viewi\AppConfig;
 
-return [
-    PageEngine::SOURCE_DIR =>  __DIR__ . '/Components',
-    PageEngine::SERVER_BUILD_DIR =>  __DIR__ . '/build',
-    PageEngine::PUBLIC_ROOT_DIR => __DIR__ . '/../public/',
-    PageEngine::DEV_MODE => true,
-    PageEngine::RETURN_OUTPUT => true,
-    PageEngine::COMBINE_JS => true
-];
+$d = DIRECTORY_SEPARATOR;
+$viewiAppPath = __DIR__ . $d;
+$componentsPath =  $viewiAppPath . 'Components';
+$buildPath = $viewiAppPath . 'build';
+$jsPath = $viewiAppPath . 'js';
+$assetsSourcePath = $viewiAppPath . 'assets';
+$publicPath = __DIR__ . $d . '..' . $d . 'public'; // '/home/ivan/viewi-docs/configs/../public';
+$assetsPublicUrl = '';
+
+return (new AppConfig('react'))
+    ->buildTo($buildPath)
+    ->buildFrom($componentsPath)
+    ->withJsEntry($jsPath)
+    ->putAssetsTo($publicPath)
+    ->assetsPublicUrl($assetsPublicUrl)
+    ->withAssets($assetsSourcePath)
+    ->combine(false)
+    ->minify(false)
+    ->developmentMode(true)
+    ->buildJsSourceCode()
+    ->watchWithNPM(true);

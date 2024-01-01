@@ -2,7 +2,7 @@
 
 namespace Components\Views\Common;
 
-use Viewi\BaseComponent;
+use Viewi\Components\BaseComponent;
 
 class MenuBar extends BaseComponent
 {

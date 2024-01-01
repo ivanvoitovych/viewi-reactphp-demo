@@ -3,17 +3,21 @@
 namespace Components\Views\Home;
 
 use Components\Models\PostModel;
-use Viewi\BaseComponent;
-use Viewi\Common\HttpClient;
+use Viewi\Components\BaseComponent;
+use Viewi\Components\Http\HttpClient;
 
 class HomePage extends BaseComponent
 {
     public string $title = 'Viewi - Reactive application for PHP';
     public ?PostModel $post = null;
 
-    public function __init(HttpClient $http)
+    public function __construct(private HttpClient $http)
     {
-        $http->get('/api/posts/45')->then(
+    }
+
+    public function init()
+    {
+        $this->http->get('/api/posts/45')->then(
             function (PostModel $post) {
                 $this->post = $post;
             },

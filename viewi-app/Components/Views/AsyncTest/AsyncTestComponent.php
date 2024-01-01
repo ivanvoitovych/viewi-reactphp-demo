@@ -2,7 +2,7 @@
 
 namespace Components\Views\AsyncTest;
 
-use Viewi\BaseComponent;
+use Viewi\Components\BaseComponent;
 
 class AsyncTestComponent extends BaseComponent
 {

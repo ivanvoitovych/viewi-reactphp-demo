@@ -10,16 +10,26 @@ use Components\Views\Pages\CounterPage;
 use Components\Views\Pages\CurrentUrlTestPage;
 use Components\Views\Pages\RedirectTestComponent;
 use Components\Views\Pages\TodoAppPage;
-use Viewi\Routing\Route as ViewiRoute;
+use Viewi\App;
+use Viewi\Components\Http\Message\Response;
 
-ViewiRoute::get('/', HomePage::class);
-ViewiRoute::get('/counter', CounterPage::class);
-ViewiRoute::get('/counter/{page}', CounterPage::class);
-ViewiRoute::get('/todo', TodoAppPage::class);
-ViewiRoute::get('/redirect-test', RedirectTestComponent::class);
-ViewiRoute::get('/current-url', CurrentUrlTestPage::class); 
-ViewiRoute::get('/async-ssr-test/{id}', AsyncTestComponent::class);
-ViewiRoute::get('/interceptors-test/{id}', InterceptorsTestComponent::class);
-ViewiRoute::get('/middleware-test/{id}', MiddlewareTestComponent::class);
-ViewiRoute::get('/middleware-fail-test/{id}', MiddlewareFailTestComponent::class);
-ViewiRoute::get('*', NotFoundPage::class);
+/**
+ * @var App $app
+ */
+$router = $app->router();
+
+$router->get('/', HomePage::class);
+$router->get('/counter', CounterPage::class);
+$router->get('/counter/{page}', CounterPage::class);
+$router->get('/todo', TodoAppPage::class);
+$router->get('/redirect-test', RedirectTestComponent::class);
+$router->get('/current-url', CurrentUrlTestPage::class);
+$router->get('/async-ssr-test/{id}', AsyncTestComponent::class);
+$router->get('/interceptors-test/{id}', InterceptorsTestComponent::class);
+$router->get('/middleware-test/{id}', MiddlewareTestComponent::class);
+$router->get('/middleware-fail-test/{id}', MiddlewareFailTestComponent::class);
+$router
+    ->get('*', NotFoundPage::class)
+    ->transform(function (Response $response) {
+        return $response->withStatus(404, 'Not Found');
+    });

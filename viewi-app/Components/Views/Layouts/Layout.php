@@ -2,7 +2,7 @@
 
 namespace Components\Views\Layouts;
 
-use Viewi\BaseComponent;
+use Viewi\Components\BaseComponent;
 
 class Layout extends BaseComponent
 {

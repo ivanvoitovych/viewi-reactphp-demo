@@ -7,12 +7,12 @@
         Expected response time 400 - 600 ms (randomly with Loop::addTimer)
     </p>
     <div if="$post">
-        <h2>$post->Name</h2>
+        <h2>{$post->Name}</h2>
         <div>
-            <strong>Id: $post->Id</strong>
+            <strong>Id: {$post->Id}</strong>
         </div>
         <div>
-            <i>Version: $post->Version</i>
+            <i>Version: {$post->Version}</i>
         </div>
     </div>
     <div if="$message">

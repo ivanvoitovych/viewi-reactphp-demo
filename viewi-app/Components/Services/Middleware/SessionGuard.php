@@ -2,26 +2,27 @@
 
 namespace Components\Services\Middleware;
 
-use Viewi\Common\HttpClient;
-use Viewi\Components\Interfaces\IMiddleware;
+use Viewi\Components\Http\HttpClient;
+use Viewi\Components\Middleware\IMIddleware;
+use Viewi\Components\Middleware\IMIddlewareContext;
+use Viewi\Components\Routing\ClientRoute;
+use Viewi\DI\Singleton;
 
+#[Singleton]
 class SessionGuard implements IMiddleware
 {
-    private HttpClient $http;
-
-    public function __construct(HttpClient $http)
+    public function __construct(private HttpClient $http)
     {
-        $this->http = $http;
     }
 
-    public function run(callable $next)
+    public function run(IMIddlewareContext $c)
     {
-        // If we want to continue with the page (component) - we call $next(Continue = true): $next() or $next(true)
-        $this->http->post('/api/authorization/session')->then(function ($response) use ($next) {
-            $next();
-        }, function ($error) use ($next) {
-            // If we want to cancel - we call $next(false);
-            $next(false);
+        $this->http->post('/api/authorization/session')->then(function ($response) use ($c) {
+            // all good - call $c->next(); or $c->next(true);
+            $c->next();
+        }, function () use ($c) {
+            // If we want to cancel - we call $c->next(false);
+            $c->next(false);
         });
     }
 }

@@ -2,13 +2,17 @@
 
 namespace Components\Views\Pages;
 
-use Viewi\BaseComponent;
-use Viewi\Common\ClientRouter;
+use Viewi\Components\BaseComponent;
+use Viewi\Components\Routing\ClientRoute;
 
 class RedirectTestComponent extends BaseComponent
 {
-    public function __init(ClientRouter $router)
+    public function __construct(private ClientRoute $router)
     {
-        $router->navigate('/');
+    }
+
+    public function init()
+    {
+        $this->router->navigate('/');
     }
 }

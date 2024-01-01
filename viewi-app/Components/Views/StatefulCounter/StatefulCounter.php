@@ -3,14 +3,11 @@
 namespace Components\Views\StatefulCounter;
 
 use Components\Services\Reducers\CounterReducer;
-use Viewi\BaseComponent;
+use Viewi\Components\BaseComponent;
 
 class StatefulCounter extends BaseComponent
 {
-    public CounterReducer $counter;
-
-    public function __init(CounterReducer $reducer)
+    public function __construct(public CounterReducer $counter)
     {
-        $this->counter = $reducer;
     }
 }

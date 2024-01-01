@@ -2,5 +2,10 @@ composer.phar
 /vendor/
 **/build/**/*
 !**/build/.gitkeep
-**/viewi-build/**/*
-src/ViewiApp/publicConfig.php
+**/build/**/*
+!**/build/.gitkeep
+**/viewi-react/**/*
+viewi-app/publicConfig.php
+viewi-app/js/app/**/*
+viewi-app/js/dist/**/*
+**/node_modules
