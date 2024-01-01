@@ -8,7 +8,7 @@ $componentsPath =  $viewiAppPath . 'Components';
 $buildPath = $viewiAppPath . 'build';
 $jsPath = $viewiAppPath . 'js';
 $assetsSourcePath = $viewiAppPath . 'assets';
-$publicPath = __DIR__ . $d . '..' . $d . 'public'; // '/home/ivan/viewi-docs/configs/../public';
+$publicPath = __DIR__ . $d . '..' . $d . 'public';
 $assetsPublicUrl = '';
 
 return (new AppConfig('react'))
