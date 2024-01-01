@@ -37,8 +37,8 @@ class RequestsHandlerMiddleware
                 }
                 return $action($request);
             } elseif ($action instanceof ComponentRoute) {
-                $request = new Request($request->getUri()->getPath(), strtolower($request->getMethod()));
-                $response = $this->viewiApp->engine()->render($action->component, $match['params'], $request);
+                $viewiRequest = new Request($request->getUri()->getPath(), strtolower($request->getMethod()));
+                $response = $this->viewiApp->engine()->render($action->component, $match['params'], $viewiRequest);
             } else {
                 throw new Exception('Unknown action type.');
             }
