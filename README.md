@@ -4,11 +4,13 @@ This application demonstrates Viewi integration with ReactPHP.
 
 ## Requirements
 
-`php >= 7.4`
+`php >= 8.0`
 
 `react/http`
 
 `viewi/viewi`
+
+`react/async`
 
 ## Architecture design
 
@@ -28,10 +30,11 @@ Click here: [Demo Overview](DemoOverview.md)
 ## Integration steps
 
  - Install ReactPHP Http `composer require react/http`
+ - Install ReactPHP Async `composer require react/async`
+ - Install Viewi `composer require viewi/viewi`
  - Create `server.php` file for server code
  - Create a `public` folder for serving static and public files
- - Install Viewi `composer require viewi/viewi`
- - Create a demo application if you don't have any `vendor/bin/viewi new -e`
+ - Create a demo application if you don't have any `vendor/bin/viewi new`
 
 ## Configuration
 
@@ -40,7 +43,7 @@ It should be a public folder.
 
 In this case, it is a `public` folder:
 
- `PageEngine::PUBLIC_ROOT_DIR => __DIR__ . '/../public/'` 
+ `__DIR__ . '/../public/'` 
 
 The final config should look something like this:
 
@@ -49,16 +52,29 @@ The final config should look something like this:
 ```php
 <?php
 
-use Viewi\PageEngine;
+use Viewi\AppConfig;
 
-return [
-    PageEngine::SOURCE_DIR =>  __DIR__ . '/Components',
-    PageEngine::SERVER_BUILD_DIR =>  __DIR__ . '/build',
-    PageEngine::PUBLIC_ROOT_DIR => __DIR__ . '/../public/',
-    PageEngine::DEV_MODE => true,
-    PageEngine::RETURN_OUTPUT => true,
-    PageEngine::COMBINE_JS => true
-];
+$d = DIRECTORY_SEPARATOR;
+$viewiAppPath = __DIR__ . $d;
+$componentsPath =  $viewiAppPath . 'Components';
+$buildPath = $viewiAppPath . 'build';
+$jsPath = $viewiAppPath . 'js';
+$assetsSourcePath = $viewiAppPath . 'assets';
+$publicPath = __DIR__ . $d . '..' . $d . 'public';
+$assetsPublicUrl = '';
+
+return (new AppConfig('react'))
+    ->buildTo($buildPath)
+    ->buildFrom($componentsPath)
+    ->withJsEntry($jsPath)
+    ->putAssetsTo($publicPath)
+    ->assetsPublicUrl($assetsPublicUrl)
+    ->withAssets($assetsSourcePath)
+    ->combine(false)
+    ->minify(false)
+    ->developmentMode(true)
+    ->buildJsSourceCode()
+    ->watchWithNPM(true);
 ```
 
 ## Implementation
@@ -135,20 +151,31 @@ The most important of the application is to handle requests. In this case, we ne
 - Requests that should be handled by Viewi
 - The rest of the requests should be handled by API actions
 
-Viewi has a built-in router and it's used in this example.
+Viewi has a built-in router and is used in this example.
 But it's not required, you can use any router that you like and use it with Viewi as well.
 
-To get the route simply use `Viewi\Routing\Router::resolve` method:
+`viewi-app\viewi.php` contains your Viewi application instance initialization. Using that instance you can get router.
+
+```php
+use Viewi\App;
+
+$config = require  __DIR__ . '/config.php';
+$publicConfig = require  __DIR__ . '/publicConfig.php';
+
+$app = new App($config, $publicConfig);
+
+$router = $app->router();
+```
 
 ```php
 public function __invoke(ServerRequestInterface $request)
 {
-    $match = Router::resolve($request->getUri()->getPath(), $request->getMethod());
+    $match = $this->router->resolve($request->getUri()->getPath(), $request->getMethod());
 ```
 
 It will contain the following information:
 
-- `$match['route']`: instance of `Viewi\Routing\RouteItem`
+- `$match['item']`: instance of `Viewi\Routing\RouteItem`
     - action: string|callable - class name or callable
 - `$match['params']`: array of matched arguments from the path (/api/posts/{id} -> ['id' => '5'])
 
@@ -166,102 +193,15 @@ if (is_callable($action) && !is_string($action)) {
 }
 ```
 
-If not, that means we have Viewi component and we need to call render in asynchronous mode:
-
-- Wrap the call inside of a Promise and return it
+If not, that means we have Viewi component and we need to call render method:
 
 ```php
-...
-return new Promise(function ($resolve, $reject) use ($request, $action, $match) {
-...
-```
-
-- Instantiate `Viewi\DI\Container` for isolated scope
-
-```php
-...
-$container = new Container();
-```
-
-- Register an instance of `ReactHttpContext` that implements `Viewi\WebComponents\IHttpContext` interface.
-
-```php
-...
-$httpContext = new ReactHttpContext($request);
-$container->set(IHttpContext::class, $httpContext);
-```
-
-This will provide for Viewi some useful information about the current request.
-And also will collect response headers in case Viewi component will make redirect or access is not allowed for current user, etc.
-
-```php
-<?php
-
-namespace App\Http;
-
-use Psr\Http\Message\ServerRequestInterface;
-use Viewi\WebComponents\IHttpContext;
-
-class ReactHttpContext implements IHttpContext
-{
-    private array $responseHeaders = [];
-    private ServerRequestInterface $request;
-
-    public function __construct(ServerRequestInterface $request)
-    {
-        $this->request = $request;
-    }
-
-    public function getResponseHeaders(): ?array
-    {
-        return $this->responseHeaders;
-    }
-
-    public function setResponseHeader(string $key, string $value): void
-    {
-        $this->responseHeaders[$key] = $value;
-    }
-
-    public function getCurrentUrl(): ?string
-    {
-        return $this->request->getUri()->getPath();
-    }
+use Viewi\Components\Http\Message\Request;
+// ...
+if ($action instanceof ComponentRoute) {
+    $viewiRequest = new Request($request->getUri()->getPath(), strtolower($request->getMethod()));
+    $response = $this->viewiApp->engine()->render($action->component, $match['params'], $viewiRequest);
 }
-```
-
-- Run render in async mode
-
-```php
-App::getEngine()->render(
-    $action,
-    $match['params'],
-    $container,
-    function ($viewiResponse) use ($httpContext, $resolve) {
-    // use $viewiResponse: string | \Viewi\WebComponents\Response
-...
-        if ($viewiResponse instanceof \Viewi\WebComponents\Response) {
-            $resolve(
-                new Response(
-                $viewiResponse->StatusCode,
-                    array(
-                        'Content-Type' => 'text/html'
-                    ) + $headers,
-                    $viewiResponse->Content
-                )
-            );
-            return;
-        } else if (is_string($viewiResponse)) {
-            $resolve(
-                new Response(
-                    200,
-                    array(
-                        'Content-Type' => 'text/html'
-                    ) + $headers,
-                    $viewiResponse
-                )
-            );
-            return;
-...
 ```
 
 The full code is located here `App\Middleware\RequestsHandlerMiddleware.php`
@@ -277,86 +217,173 @@ $http = new React\Http\HttpServer(
 );
 ```
 
-## ReactPHP adapter for Viewi
+### Viewi React bridge
 
-To make things work during SSR you need to tell Viewi how to invoke the request on the server-side by extending `Viewi\Routing\RouteAdapterBase`.
-It has the following abstract methods:
-
-- `register($method, $url, $component, $defaults);` - used when you have a custom routing system. In case you use Viewi router it's not needed.
-- `handle($method, $url, $params = null);` - used when `HttpClient` calls an API during SSR.
-
-In this example we don't need `register`, so keep it empty:
+By default, Viewi uses its own internal request/response handler. To tell Viewi that we need to handle request/response with ReactPHP we need to set up a bridge:
 
 ```php
-public function register($method, $url, $component, $defaults)
+interface IViewiBridge
 {
-    // nothing if you are using Viewi router
+    // file_exists - Checks whether a file or directory exists
+    function file_exists(string $filename): bool;
+    
+    // is_dir - Tells whether the filename is a directory
+    function is_dir(string $filename): bool;
+    
+    // file_get_contents - Reads entire file into a string
+    function file_get_contents(string $filename): string | false;
+    
+    // request - Server-side internal request handler. Request that comes from Viewi component.
+    function request(Request $request): mixed;
 }
 ```
 
-For the `handle` method we will need `RequestsHandlerMiddleware` to process internal requests. Let's inject it in the constructor:
+Default bridge: `Viewi\Bridge\DefaultBridge`.
+
+We can reuse some of the methods and override only a request handler.
+
+For the `request` method we will need `RequestsHandlerMiddleware` to process internal requests. Let's inject it in the constructor:
 
 ```php
-/**
- * 
- * @var callable
- */
-private $requestHandler;
-
-public function __construct($requestHandler)
+class ViewiReactBridge extends DefaultBridge
 {
-    $this->requestHandler = $requestHandler;
-}
+    /**
+     * 
+     * @var callable
+     */
+    private $requestHandler;
+
+    public function __construct($requestHandler)
+    {
+        $this->requestHandler = $requestHandler;
+    }
 ```
 
 Next, we need to create an instance of `React\Http\Message\ServerRequest` and pass it to the `RequestsHandlerMiddleware`:
 
 ```php
-public function handle($method, $url, $params = null)
+public function request(\Viewi\Components\Http\Message\Request $request): mixed
 {
-    $request = new ServerRequest($method, $url);
-    $response = ($this->requestHandler)($request);
+    $reactRequest = new \React\Http\Message\ServerRequest(
+            $request->method,
+            $request->url,
+            $request->headers,
+            $request->body ? json_encode($request->body) : ''
+        );
+    $response = ($this->requestHandler)($reactRequest);
+    if ($response instanceof PromiseInterface) {
+        $response = await($response);
+    }
 ```
 
-The response could be an instance of `React\Promise\Promise` or it could be an instance of `Psr\Http\Message\ResponseInterface`.
-
-If it's a promise - we need to return an instance of `Viewi\Common\PromiseResolver` to the Viewi 
-which will wait for `React\Promise\Promise` to be resolved. Otherwise - just return the response from invocation:
+Also, the url could be external and we need to make a real HTTP call, le's use `\React\Http\Browser`:
 
 ```php
-if ($response instanceof Promise) {
-    // handle Promise
-    return new PromiseResolver(function (callable $resolve, callable $reject) use ($response) {
-        $response->then(function ($innerResponse) use ($resolve) {
-            $data = $this->handleInternal($innerResponse); // 
-            $resolve($data);
-        }, $reject);
-    });
-}
-return $this->handleInternal($response);
+public function request(\Viewi\Components\Http\Message\Request $request): mixed
+{
+    if ($request->isExternal) {
+        $browser = new \React\Http\Browser();
+        $promise = $browser->request($request->method, $request->url, $request->headers, $request->body ? json_encode($request->body) : '');
+        $response = await($promise);
+        return @json_decode($response->getBody(), true);
+    }
+// ...
 ```
 
-`handleInternal` method will take the response and convert it to `Viewi\WebComponents\Response` or a string (if response code is 200).
+At the end, the `request` method should return either a `\Viewi\Components\Http\Message\Response` instance, or just any raw data (array, model class instance, anything that is serializable into JSON).
+
+To set up a new bridge for Viewi application we will use Viewi factory:
 
 ```php
-private function handleInternal($response)
+$viewiReactBridge = new ViewiReactBridge($viewiRequestHandler);
+// \Viewi\App
+$app->factory()->add(IViewiBridge::class, function () use ($viewiReactBridge) {
+    return $viewiReactBridge;
+});
+```
+
+Full code:
+
+`App\Bridge\ViewiReactBridge.php`
+
+```php
+<?php
+
+namespace App\Bridge;
+
+use App\Message\RawJsonResponse;
+use React\Http\Message\ServerRequest;
+use React\Promise\PromiseInterface;
+use Viewi\Bridge\DefaultBridge;
+use Viewi\Components\Http\Message\Request;
+
+use function React\Async\await;
+
+class ViewiReactBridge extends DefaultBridge
 {
-    if ($response instanceof RawJsonResponse) {
-        return $response->getData();
+    /**
+     * 
+     * @var callable
+     */
+    private $requestHandler;
+
+    public function __construct($requestHandler)
+    {
+        $this->requestHandler = $requestHandler;
     }
-    /** @var Response $response */
-    if ($response->getStatusCode() != 200) {
-        return (new WebComponentsResponse())
-            ->WithContent(json_decode($response->getBody()))
-            ->WithCode($response->getStatusCode())
-            ->WithHeaders($response->getHeaders());
+
+    public function request(Request $request): mixed
+    {
+        if ($request->isExternal) {
+            $browser = new \React\Http\Browser();
+            $promise = $browser->request($request->method, $request->url, $request->headers, $request->body ? json_encode($request->body) : '');
+            $response = await($promise);
+            return @json_decode($response->getBody(), true);
+        }
+
+        $reactRequest = new ServerRequest($request->method, $request->url, $request->headers, $request->body ? json_encode($request->body) : '');
+        $response = ($this->requestHandler)($reactRequest);
+        if ($response instanceof PromiseInterface) {
+            $response = await($response);
+        }
+
+        /**
+         * @var \React\Http\Message\Response $response
+         */
+
+        $viewiResponse = new \Viewi\Components\Http\Message\Response($request->url, $response->getStatusCode(), $response->getReasonPhrase(), $response->getHeaders());
+        if ($response instanceof RawJsonResponse) {
+            $viewiResponse->body = $response->getData();
+        } else {
+            $data = $response->getBody()->__toString();
+            if ($data) {
+                $viewiResponse->body = @json_decode($data, true);
+            }
+        }
+
+        return $viewiResponse;
     }
-    return json_decode($response->getBody());
 }
 ```
+
+### Using `react/async`
+
+In order to convert asynchronous response from ReactPHP action and pass it to Viewi we need to extract it from promise as a `\React\Http\Message\Response` instance. To do that we will use `await` function:
+
+```php
+use React\Promise\PromiseInterface;
+use function React\Async\await;
+// ...
+if ($response instanceof PromiseInterface) {
+    $response = await($response);
+}
+```
+
+### Extracting data from HTTP call for components
 
 In ReactPHP, response by default implements `Psr\Http\Message\ResponseInterface`, therefore the content is always a string (html or json).
-But if you want to use typed function arguments inside of callbacks from HttpClient requests (see example), it's recommended to use `RawJsonResponse` declared in `App\Message\RawJsonResponse.php`
+
+But if you want to use typed function arguments inside of callbacks from `HttpClient` requests (see example), it's recommended to use `RawJsonResponse` declared in `App\Message\RawJsonResponse.php`
 
 ```php
 $http->get('/api/posts/45')->then(
@@ -377,27 +404,37 @@ The last step is to set up your server:
 
 // php server.php
 
-use App\Adapter\ViewiReactAdapter;
+use App\Bridge\ViewiReactBridge;
 use App\Controller\AuthSessionAction;
 use App\Controller\AuthTokenAction;
 use App\Controller\PostsAction;
 use App\Controller\PostsActionAsync;
 use App\Middleware\RequestsHandlerMiddleware;
 use App\Middleware\StaticFilesMiddleware;
-use Viewi\Routing\Route;
+use Viewi\Bridge\IViewiBridge;
 
 require __DIR__ . '/vendor/autoload.php';
 
-$viewiRequestHandler = new RequestsHandlerMiddleware();
-Route::setAdapter(new ViewiReactAdapter($viewiRequestHandler));
+/**
+ * @var \Viewi\App
+ */
+$viewiApp = include __DIR__ . '/viewi-app/viewi.php';
+$router = $viewiApp->router();
+$viewiRequestHandler = new RequestsHandlerMiddleware($router, $viewiApp);
 
-Viewi\Routing\Router::register('get', '/api/posts/{id}', new PostsAction());
-Viewi\Routing\Router::register('get', '/api/posts/{id}/async/{ms?}', new PostsActionAsync());
-Viewi\Routing\Router::register('post', '/api/authorization/session', new AuthSessionAction());
-Viewi\Routing\Router::register('post', '/api/authorization/token/{valid}', new AuthTokenAction());
+$viewiReactBridge = new ViewiReactBridge($viewiRequestHandler);
+$app->factory()->add(IViewiBridge::class, function () use ($viewiReactBridge) {
+    return $viewiReactBridge;
+});
+
+
+$router->register('get', '/api/posts/{id}', new PostsAction());
+$router->register('get', '/api/posts/{id}/async/{ms?}', new PostsActionAsync());
+$router->register('post', '/api/authorization/session', new AuthSessionAction());
+$router->register('post', '/api/authorization/token/{valid}', new AuthTokenAction());
 
 // include viewi routes
-include __DIR__ . '/viewi-app/viewi.php';
+include __DIR__ . '/viewi-app/routes.php';
 
 $http = new React\Http\HttpServer(
     new StaticFilesMiddleware(__DIR__ . '/public'),
@@ -410,14 +447,59 @@ $http->listen($socket);
 echo 'Listening on ' . str_replace('tcp:', 'http:', $socket->getAddress()) . PHP_EOL;
 ```
 
+### Build Viewi application
+
+Viewi application is not about PHP. It is also a fully capable JavaScript application.
+
+To set it up you need to perform simple steps.
+
+If you are using `vendor/bin/viewi new` that may not be necessary.
+
+But if you are cloning this repository you will need to install NPM packages.
+
+`cd viewi-app/js`
+
+`npm install`
+
+Wait for the installation.
+
+### Watching mode
+
+Watching mode will monitor your Viewi application for changes and will trigger a build process automatically.
+
+Go to your Viewi application `js` folder
+
+`cd viewi-app/js`
+
+Run NPM watch command
+
+`npm run watch`
+
+You will need to keep two terminals open in order to run this and ReactPHP server for development.
+
+Watch mode is optional, please follow [https://viewi.net/docs/watch-mode](https://viewi.net/docs/watch-mode) for more.
+
+### Step by step 
+
+- Instantiate `\Viewi\App` and keep int a variable
+    - `$viewiApp = include __DIR__ . '/viewi-app/viewi.php';`
+- Get Viewi router if using
+    - `$router = $viewiApp->router();`
 - Instantiate `RequestsHandlerMiddleware` and keep it in a variable
-    - `$viewiRequestHandler = new RequestsHandlerMiddleware();`
-- set an adapter for Viewi: 
-    - `Route::setAdapter(new ViewiReactAdapter($viewiRequestHandler));`
+    - `$viewiRequestHandler = new RequestsHandlerMiddleware($router, $viewiApp);`
+- Create a bridge for Viewi: 
+    - `$viewiReactBridge = new ViewiReactBridge($viewiRequestHandler);`
+
+```php
+$app->factory()->add(IViewiBridge::class, function () use ($viewiReactBridge) {
+    return $viewiReactBridge;
+});
+```
+
 - Register your actions:
-    - For example: `Viewi\Routing\Router::register('get', '/api/posts/{id}', new PostsAction());`
+    - For example: `$router->register('get', '/api/posts/{id}', new PostsAction());`
 - Include Viewi routes (for components)
-    - `include __DIR__ . '/viewi-app/viewi.php';`
+    - `include __DIR__ . '/viewi-app/routes.php';`
 - Create a http server
     - `$http = new React\Http\HttpServer(`
     - pass `StaticFilesMiddleware` if needed
