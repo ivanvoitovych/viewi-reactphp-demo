@@ -1,4 +1,4 @@
-# ReactPHP ft. Viewi
+# ReactPHP ft. Viewi 2
 
 This application demonstrates Viewi integration with ReactPHP.
 
