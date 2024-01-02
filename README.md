@@ -12,6 +12,8 @@ This application demonstrates Viewi integration with ReactPHP.
 
 `react/async`
 
+`Node.js >= 12` (for building assets)
+
 ## Architecture design
 
 ReactPHP will serve our API. 
@@ -29,7 +31,7 @@ Click here: [Demo Overview](DemoOverview.md)
 
 ## Integration steps
 
- - Install ReactPHP Http `composer require react/http`
+ - Install ReactPHP HTTP `composer require react/http`
  - Install ReactPHP Async `composer require react/async`
  - Install Viewi `composer require viewi/viewi`
  - Create `server.php` file for server code
@@ -38,12 +40,22 @@ Click here: [Demo Overview](DemoOverview.md)
 
 ## Configuration
 
+Couple of important settings to consider here.
+
 To run Viewi application you need to tell Viewi where to put its compiled files.
 It should be a public folder.
 
 In this case, it is a `public` folder:
 
  `__DIR__ . '/../public/'` 
+
+Public url path to resolve assets, in this case it's an empty string `''` (means assets base URL is `http://localhost/`)
+
+NPM watch setting, you can either use it, or you can disable it.
+
+`->watchWithNPM(true)` or `->watchWithNPM(false)`
+
+Setting it to `false` will trigger a build process on the first request.
 
 The final config should look something like this:
 
@@ -456,6 +468,8 @@ To set it up you need to perform simple steps.
 If you are using `vendor/bin/viewi new` that may not be necessary.
 
 But if you are cloning this repository you will need to install NPM packages.
+
+Assuming that you have installed `composer` packages:
 
 `cd viewi-app/js`
 

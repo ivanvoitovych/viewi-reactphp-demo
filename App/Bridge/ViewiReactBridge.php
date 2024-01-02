@@ -26,6 +26,7 @@ class ViewiReactBridge extends DefaultBridge
     public function request(Request $request): mixed
     {
         if ($request->isExternal) {
+            // HTTP call to some third party resource
             $browser = new \React\Http\Browser();
             $promise = $browser->request($request->method, $request->url, $request->headers, $request->body ? json_encode($request->body) : '');
             $response = await($promise);
@@ -41,7 +42,6 @@ class ViewiReactBridge extends DefaultBridge
         /**
          * @var \React\Http\Message\Response $response
          */
-
         $viewiResponse = new \Viewi\Components\Http\Message\Response($request->url, $response->getStatusCode(), $response->getReasonPhrase(), $response->getHeaders());
         if ($response instanceof RawJsonResponse) {
             $viewiResponse->body = $response->getData();
