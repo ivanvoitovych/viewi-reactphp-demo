@@ -17,7 +17,7 @@ const interceptResponses = function (response: Response, callback, interceptorIn
         if (keepGoing && response.status >= 200 && response.status < 300) {
             callback(response.body);
         } else {
-            callback(undefined, !!response.body ? response.body : 'Failed');
+            callback(undefined, response);
         }
     };
 
@@ -63,9 +63,9 @@ class HttpClient {
                     if (keepGoing) {
                         const requestKey = request.method + '_' + request.url + '_' + JSON.stringify(request.body);
                         if (requestKey in state.http) {
-                            const responseData = JSON.parse(state.http[requestKey]);
+                            const responseData: { status: number, data: any } = JSON.parse(state.http[requestKey]);
                             delete state.http[requestKey];
-                            const response = new Response(request.url, 200, 'OK', {}, responseData);
+                            const response = new Response(request.url, responseData.status, 'OK', {}, responseData.data);
                             interceptResponses(response, callback, interceptorInstances);
                             return;
                         } else {
@@ -117,6 +117,18 @@ class HttpClient {
 
     post(url: string, body?: any, headers?: { [name: string]: string }) {
         return this.request("post", url, body, headers);
+    }
+
+    put(url: string, body?: any, headers?: { [name: string]: string }) {
+        return this.request("put", url, body, headers);
+    }
+
+    delete(url: string, body?: any, headers?: { [name: string]: string }) {
+        return this.request("delete", url, body, headers);
+    }
+
+    patch(url: string, body?: any, headers?: { [name: string]: string }) {
+        return this.request("patch", url, body, headers);
     }
 
     withInterceptor(interceptor: string) {

@@ -7,6 +7,7 @@ use Components\Services\Interceptors\AuthorizationInterceptor;
 use Components\Services\Interceptors\SessionInterceptor;
 use Viewi\Components\BaseComponent;
 use Viewi\Components\Http\HttpClient;
+use Viewi\Components\Http\Message\Response;
 
 class InterceptorsTestComponent extends BaseComponent
 {
@@ -27,8 +28,8 @@ class InterceptorsTestComponent extends BaseComponent
                 function (PostModel $post) {
                     $this->post = $post;
                 },
-                function ($error) {
-                    $this->message = $error;
+                function (Response $response) {
+                    $this->message = $response->body;
                 }
             );
     }

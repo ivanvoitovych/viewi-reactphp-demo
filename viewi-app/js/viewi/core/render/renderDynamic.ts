@@ -30,9 +30,11 @@ export function renderDynamic(instance: BaseComponent<any>, node: TemplateNode, 
         map: { ...scope.map },
         track: [],
         instance: instance,
+        lastComponent: scope.lastComponent,
         parent: scope,
         children: {},
-        counter: 0
+        counter: 0,
+        slots: scope.slots
     };
     if (scope.refs) {
         nextScope.refs = scope.refs;
@@ -51,6 +53,7 @@ export function renderDynamic(instance: BaseComponent<any>, node: TemplateNode, 
                 map: { ...scope.map },
                 track: [],
                 instance: instance,
+                lastComponent: scope.lastComponent,
                 parent: nextScope,
                 children: {},
                 counter: 0,

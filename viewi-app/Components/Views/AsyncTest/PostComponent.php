@@ -5,6 +5,7 @@ namespace Components\Views\AsyncTest;
 use Components\Models\PostModel;
 use Viewi\Components\BaseComponent;
 use Viewi\Components\Http\HttpClient;
+use Viewi\Components\Http\Message\Response;
 
 class PostComponent extends BaseComponent
 {
@@ -22,8 +23,8 @@ class PostComponent extends BaseComponent
                 $this->post = $post;
                 // print_r(['$http->get->then->success', $post]);
             },
-            function ($error) {
-                echo $error;
+            function (Response $response) {
+                echo $response->body;
                 // print_r(['$http->get->then->error', $error]);
             }
         );

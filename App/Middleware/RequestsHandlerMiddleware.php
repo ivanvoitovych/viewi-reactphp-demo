@@ -70,7 +70,7 @@ class RequestsHandlerMiddleware
             }
         } catch (Throwable $t) {
             echo $t->getMessage() . "\n";
-            // echo $t->getTraceAsString();
+            echo $t->getTraceAsString();
             // !! For production: Consider using $reject and don't output stack trace
             return new Response(
                 500,

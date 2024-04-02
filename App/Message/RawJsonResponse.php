@@ -2,7 +2,7 @@
 
 namespace App\Message;
 
-use RingCentral\Psr7\Response;
+use React\Http\Message\Response;
 
 class RawJsonResponse extends Response
 {

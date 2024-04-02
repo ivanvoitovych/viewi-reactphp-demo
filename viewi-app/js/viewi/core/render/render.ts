@@ -90,10 +90,12 @@ export function render(
                                     arguments: scope.arguments,
                                     map: scope.map,
                                     instance: instance,
+                                    lastComponent: scope.lastComponent,
                                     track: [],
                                     parent: scope,
                                     children: {},
-                                    counter: 0
+                                    counter: 0,
+                                    slots: scope.slots
                                 };
                                 if (scope.refs) {
                                     nextScope.refs = scope.refs;
@@ -135,12 +137,14 @@ export function render(
                                         id: scopeId,
                                         why: 'elseif',
                                         instance: instance,
+                                        lastComponent: scope.lastComponent,
                                         arguments: scope.arguments,
                                         map: scope.map,
                                         track: [],
                                         parent: scope,
                                         children: {},
-                                        counter: 0
+                                        counter: 0,
+                                        slots: scope.slots
                                     };
                                     if (scope.refs) {
                                         nextScope.refs = scope.refs;
@@ -184,12 +188,14 @@ export function render(
                                         id: scopeId,
                                         why: "else",
                                         instance: instance,
+                                        lastComponent: scope.lastComponent,
                                         arguments: scope.arguments,
                                         map: scope.map,
                                         track: [],
                                         parent: scope,
                                         children: {},
-                                        counter: 0
+                                        counter: 0,
+                                        slots: scope.slots
                                     };
                                     if (scope.refs) {
                                         nextScope.refs = scope.refs;
@@ -219,7 +225,7 @@ export function render(
                                 const anchor = hydrate ? getAnchor(target) : undefined;
                                 const anchorBegin = createAnchorNode(target, insert, anchor); // begin foreach
                                 const isNumeric = Array.isArray(data);
-                                const dataArrayScope: ArrayScope = {};
+                                const dataArrayScope: ArrayScope = { data: {} };
                                 for (let forKey in data) {
                                     const dataKey = isNumeric ? +forKey : forKey;
                                     const dataItem = data[dataKey];
@@ -228,12 +234,14 @@ export function render(
                                         id: scopeId,
                                         why: "foreach",
                                         instance: instance,
+                                        lastComponent: scope.lastComponent,
                                         arguments: [...scope.arguments],
                                         map: { ...scope.map },
                                         track: [],
                                         parent: scope,
                                         children: {},
-                                        counter: 0
+                                        counter: 0,
+                                        slots: scope.slots
                                     };
                                     if (scope.refs) {
                                         nextScope.refs = scope.refs;
@@ -249,7 +257,7 @@ export function render(
                                     const itemBeginAnchor = createAnchorNode(target, insert, anchor, ForeachAnchorEnum.BeginAnchor + nextAnchorNodeId()); // begin foreach item
                                     render(target, instance, [node], nextScope, nextDirectives, hydrate, insert);
                                     const itemEndAnchor = createAnchorNode(target, insert, anchor, itemBeginAnchor._anchor); // end foreach item
-                                    dataArrayScope[dataKey] = {
+                                    dataArrayScope.data[dataKey] = {
                                         key: dataKey,
                                         value: dataItem,
                                         begin: itemBeginAnchor,
@@ -264,7 +272,7 @@ export function render(
                                         const trackingPath = directive.children![0].subs[subI];
                                         const nextDirectives: DirectiveMap = { map: { ...localDirectiveMap.map }, storage: { ...localDirectiveMap.storage } };
                                         track(instance, trackingPath, scope, [renderForeach,
-                                            [instance, node, directive, anchorNode, dataArrayScope, nextDirectives, scope]]);
+                                            [instance, node, directive, { anchorBegin, anchorNode }, dataArrayScope, nextDirectives, scope]]);
                                     }
                                 }
 
@@ -308,9 +316,11 @@ export function render(
                         map: { ...scope.map },
                         track: [],
                         instance: instance,
+                        lastComponent: scope.lastComponent,
                         parent: scope,
                         children: {},
-                        counter: 0
+                        counter: 0,
+                        slots: scope.slots
                     };
                     if (scope.refs) {
                         nextScope.refs = scope.refs;
@@ -331,6 +341,7 @@ export function render(
                             track: [],
                             parent: nextScope,
                             instance: instance,
+                            lastComponent: { instance: scope.lastComponent.instance },
                             children: {},
                             counter: 0,
                             slots: scope.slots
@@ -373,6 +384,7 @@ export function render(
                                 unpack(slot.node);
                                 slot.node.unpacked = true;
                             }
+                            slot.scope.lastComponent.instance = scope.lastComponent.instance;
                             render(element, slot.scope.instance, slot.node.children!, slot.scope, undefined, hydrate, nextInsert);
                         } else { // default slot content
                             if (node.children) {
@@ -505,9 +517,13 @@ export function render(
                     : null;
                 const hasMap: { [key: string]: boolean } | null = hydrate ? {} : null;
                 for (let a = 0; a < node.attributes.length; a++) {
+                    let callArguments = [instance];
+                    if (scope.arguments) {
+                      callArguments = callArguments.concat(scope.arguments);
+                    }
                     const attribute: TemplateNode = node.attributes[a];
                     const attrName = attribute.expression
-                        ? instance.$$t[attribute.code!](instance) // TODO: arguments
+                        ? instance.$$t[attribute.code!].apply(null, callArguments)
                         : (attribute.content ?? '');
                     if (attrName[0] === '#') {
                         const refName = attrName.substring(1, attrName.length);
@@ -527,7 +543,7 @@ export function render(
                                     attribute.dynamic
                                         ? attribute.dynamic.code!
                                         : attribute.children[0].code!
-                                ](instance) as EventListener;
+                                ].apply(null, callArguments) as EventListener;
                             element.addEventListener(eventName, eventHandler);
                             // console.log('Event', attribute, eventName, eventHandler);
                         }
@@ -543,7 +559,7 @@ export function render(
                         const isOnChange = inputType === "checkbox"
                             || inputType === "radio" || inputType === "select";
                         const valueNode = attribute.children![0];
-                        const getterSetter: [(_component: BaseComponent<any>) => any, (_component: BaseComponent<any>, value: any) => void] = instance.$$t[valueNode.code!](instance);
+                        const getterSetter: [(_component: BaseComponent<any>) => any, (_component: BaseComponent<any>, value: any) => void] = instance.$$t[valueNode.code!].apply(null, callArguments);
                         const eventName = isOnChange ? 'change' : 'input';
                         const inputOptions: ModelHandler = {
                             getter: getterSetter[0],
@@ -552,7 +568,8 @@ export function render(
                             isMultiple: isMultiple
                         };
                         // set initial value
-                        updateModelValue(<HTMLModelInputElement>element, instance, inputOptions);
+                        // wait for child options to be rendered
+                        setTimeout(() => updateModelValue(<HTMLModelInputElement>element, instance, inputOptions), 0);
                         // watch for property changes
                         for (let subI in valueNode.subs!) {
                             const trackingPath = valueNode.subs[subI];
@@ -575,7 +592,7 @@ export function render(
                                 }
                             }
                         }
-                        if (valueSubs) {
+                        if (valueSubs.length) {
                             for (let subI in valueSubs) {
                                 const trackingPath = valueSubs[subI];
                                 track(instance, trackingPath, scope, [renderAttributeValue, [instance, attribute, element, attrName, scope]]);

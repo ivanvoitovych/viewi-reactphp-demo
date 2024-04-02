@@ -8,6 +8,7 @@ use Components\Services\Middleware\SessionGuard;
 use Viewi\Components\Attributes\Middleware;
 use Viewi\Components\BaseComponent;
 use Viewi\Components\Http\HttpClient;
+use Viewi\Components\Http\Message\Response;
 
 #[Middleware([AuthGuardFail::class, SessionGuard::class])]
 class MiddlewareFailTestComponent extends BaseComponent
@@ -27,8 +28,8 @@ class MiddlewareFailTestComponent extends BaseComponent
                 function (PostModel $post) {
                     $this->post = $post;
                 },
-                function ($error) {
-                    $this->message = $error;
+                function (Response $response) {
+                    $this->message = $response->body;
                 }
             );
     }

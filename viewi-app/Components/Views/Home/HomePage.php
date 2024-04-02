@@ -5,6 +5,7 @@ namespace Components\Views\Home;
 use Components\Models\PostModel;
 use Viewi\Components\BaseComponent;
 use Viewi\Components\Http\HttpClient;
+use Viewi\Components\Http\Message\Response;
 
 class HomePage extends BaseComponent
 {
@@ -21,8 +22,8 @@ class HomePage extends BaseComponent
             function (PostModel $post) {
                 $this->post = $post;
             },
-            function ($error) {
-                echo $error;
+            function (Response $response) {
+                echo $response->body;
             }
         );
     }

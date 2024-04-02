@@ -41,7 +41,8 @@ export function renderComponent(target: HtmlNodeType, name: string, props?: Prop
         }
         lastIteration[name].scope.keep = true;
     }
-    const instance: BaseComponent<any> & IRenderable = reuse ? lastIteration[name].instance : makeProxy(resolve(name, params));
+    const instance: BaseComponent<any> & IRenderable = reuse ? lastIteration[name].instance : makeProxy(resolve(name, params, false, props?.scope.lastComponent.instance || props?.scope.instance || null));
+    // console.log(name, instance._parent?._name, latestComponent?._name);
     if (!reuse) {
         if (info.hooks && info.hooks.init) {
             (instance as any).init();
@@ -56,16 +57,18 @@ export function renderComponent(target: HtmlNodeType, name: string, props?: Prop
     const scope: ContextScope = reuse ? lastIteration[name].scope : {
         id: scopeId,
         why: name,
-        arguments: props ? [...props.scope.arguments] : [],
+        arguments: [], // props ? [...props.scope.arguments] : [],
         instance: instance,
         main: true,
         map: props ? { ...props.scope.map } : {},
         track: [],
         children: {},
+        lastComponent: { instance },//props ? props.scope.lastComponent : null,
         counter: 0,
         parent: props ? props.scope : undefined,
         slots: slots
     };
+
     props && (props.scope.children[scopeId] = scope);
     if (info.refs) {
         scope.refs = info.refs;
@@ -75,9 +78,13 @@ export function renderComponent(target: HtmlNodeType, name: string, props?: Prop
     if (props && props.attributes) {
         const parentInstance = props.scope.instance;
         for (let a in props.attributes) {
+            let callArguments = [parentInstance];
+            if (props.scope.arguments) {
+                callArguments = callArguments.concat(props.scope.arguments);
+            }
             const attribute = props.attributes[a];
             const attrName = attribute.expression
-                ? parentInstance.$$t[attribute.code!](parentInstance) // TODO: arguments
+                ? parentInstance.$$t[attribute.code!].apply(null, callArguments)
                 : (attribute.content ?? '');
             if (attrName[0] === '(') {
                 const eventName = attrName.substring(1, attrName.length - 1);
@@ -87,9 +94,15 @@ export function renderComponent(target: HtmlNodeType, name: string, props?: Prop
                             attribute.dynamic
                                 ? attribute.dynamic.code!
                                 : attribute.children[0].code!
-                        ](parentInstance) as EventListener;
+                        ].apply(null, callArguments) as EventListener;
                     instance.$_callbacks[eventName] = eventHandler;
                     // console.log('Event', attribute, eventName, eventHandler);
+                }
+            } else if (attrName[0] === '#') {
+                const refName = attrName.substring(1, attrName.length);
+                parentInstance._refs[refName] = instance;
+                if (refName in parentInstance) {
+                    parentInstance[refName] = instance;
                 }
             } else {
                 const isModel = attrName === 'model';
@@ -97,10 +110,6 @@ export function renderComponent(target: HtmlNodeType, name: string, props?: Prop
                 let valueSubs = []; // TODO: on backend, pass attribute value subs in attribute
                 if (isModel) {
                     const attributeValue = attribute.children![0];
-                    let callArguments = [parentInstance];
-                    if (props.scope.arguments) {
-                        callArguments = callArguments.concat(props.scope.arguments);
-                    }
                     const getterSetter = parentInstance.$$t[attributeValue.code as number].apply(null, callArguments);
                     valueContent = getterSetter[0](parentInstance);
                     instance.$_callbacks[attrName] = getComponentModelHandler(parentInstance, getterSetter[1]);
@@ -219,6 +228,9 @@ export function renderComponent(target: HtmlNodeType, name: string, props?: Prop
             // console.log(name, instance, rootChildren);
             // console.log(name, instance);
         }
+    }
+    if (info.hooks && info.hooks.rendered) {
+        setTimeout(function () { (instance as any).rendered(); }, 0);
     }
     return scope;
 }

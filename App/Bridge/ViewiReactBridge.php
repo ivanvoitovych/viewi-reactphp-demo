@@ -7,6 +7,7 @@ use React\Http\Message\ServerRequest;
 use React\Promise\PromiseInterface;
 use Viewi\Bridge\DefaultBridge;
 use Viewi\Components\Http\Message\Request;
+use Viewi\Engine;
 
 use function React\Async\await;
 
@@ -23,7 +24,7 @@ class ViewiReactBridge extends DefaultBridge
         $this->requestHandler = $requestHandler;
     }
 
-    public function request(Request $request): mixed
+    public function request(Request $request, Engine $engine): mixed
     {
         if ($request->isExternal) {
             // HTTP call to some third party resource
