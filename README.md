@@ -1,8 +1,6 @@
 # ReactPHP ft. Viewi 2
 
-# Deprecated:
-
-## `React\Http\Message\Response` is now `final` and does not allow extending anymore. Therefore this demo is not possible, for now.
+## `React\Http\Message\Response` is now `final` and does not allow extending anymore.
 
 This application demonstrates Viewi integration with ReactPHP.
 

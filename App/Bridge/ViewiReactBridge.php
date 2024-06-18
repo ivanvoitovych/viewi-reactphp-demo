@@ -35,24 +35,21 @@ class ViewiReactBridge extends DefaultBridge
         }
 
         $reactRequest = new ServerRequest($request->method, $request->url, $request->headers, $request->body ? json_encode($request->body) : '');
-        $response = ($this->requestHandler)($reactRequest);
+        $response = ($this->requestHandler)($reactRequest, true);
         if ($response instanceof PromiseInterface) {
             $response = await($response);
         }
-
+        $data = null;
+        if ($response instanceof RawJsonResponse) {
+            $data = $response->getData();
+            $response = $response->getResponse();
+        } else {
+            $data = @json_decode($response->getBody()->__toString(), true);
+        }
         /**
          * @var \React\Http\Message\Response $response
          */
-        $viewiResponse = new \Viewi\Components\Http\Message\Response($request->url, $response->getStatusCode(), $response->getReasonPhrase(), $response->getHeaders());
-        if ($response instanceof RawJsonResponse) {
-            $viewiResponse->body = $response->getData();
-        } else {
-            $data = $response->getBody()->__toString();
-            if ($data) {
-                $viewiResponse->body = @json_decode($data, true);
-            }
-        }
-
+        $viewiResponse = new \Viewi\Components\Http\Message\Response($request->url, $response->getStatusCode(), $response->getReasonPhrase(), $response->getHeaders(), $data);
         return $viewiResponse;
     }
 }

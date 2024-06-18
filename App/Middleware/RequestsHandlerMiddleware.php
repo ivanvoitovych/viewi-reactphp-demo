@@ -6,6 +6,7 @@ use App\Message\RawJsonResponse;
 use Exception;
 use Psr\Http\Message\ServerRequestInterface;
 use React\Http\Message\Response;
+use React\Promise\PromiseInterface;
 use Throwable;
 use Viewi\App;
 use Viewi\Components\Http\Message\Request;
@@ -20,7 +21,7 @@ class RequestsHandlerMiddleware
     {
     }
 
-    public function __invoke(ServerRequestInterface $request)
+    public function __invoke(ServerRequestInterface $request, bool $keepRaw = false)
     {
         try {
             $match = $this->router->resolve($request->getUri()->getPath(), $request->getMethod());
@@ -35,7 +36,7 @@ class RequestsHandlerMiddleware
                 if ($match['params']) {
                     $request = $request->withAttribute('params', $match['params']);
                 }
-                return $action($request);
+                $response = $action($request);
             } elseif ($action instanceof ComponentRoute) {
                 $viewiRequest = new Request($request->getUri()->getPath(), strtolower($request->getMethod()));
                 $response = $this->viewiApp->engine()->render($action->component, $match['params'], $viewiRequest);
@@ -43,6 +44,10 @@ class RequestsHandlerMiddleware
                 throw new Exception('Unknown action type.');
             }
 
+            // if ($response instanceof PromiseInterface) {
+            //     return $response;
+            //     // $response = await($response);
+            // }
             if (is_string($response)) { // string as html
                 return new Response(
                     200,
@@ -58,7 +63,10 @@ class RequestsHandlerMiddleware
                     is_string($response->body) ? $response->body : json_encode($response->body)
                 );
             } elseif ($response instanceof RawJsonResponse) {
+                return $keepRaw ? $response : $response->getResponse();
+            } elseif ($response instanceof PromiseInterface) {
                 return $response;
+                // $response = await($response);
             } else { // json
                 new Response(
                     200,
@@ -70,7 +78,7 @@ class RequestsHandlerMiddleware
             }
         } catch (Throwable $t) {
             echo $t->getMessage() . "\n";
-            echo $t->getTraceAsString();
+            echo $t->getTraceAsString() . "\n";
             // !! For production: Consider using $reject and don't output stack trace
             return new Response(
                 500,
